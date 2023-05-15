@@ -1,0 +1,78 @@
+<div class="w-full h-full bg-gray-100 p-20">
+
+    <div class="grid">
+        <div class="grid-col-8 border-1 border-solid border-gray-300 bg-white rounded p-15">
+            <h4 class="font-bold m-0 display-block mb-10">Lista de canciones</h4>
+
+            <table class="table w-full">
+                <thead>
+                    <tr>
+                        <th class="px-10 py-5 bg-gray-200 text-left font-medium">Nombre</th>
+                        <th class="px-10 py-5 bg-gray-200 text-left font-medium">Titulo</th>
+                        <th class="min-size px-10 py-5 bg-gray-200 text-left font-medium"></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ng-container *ngFor="let i of [11,1,1,1]">
+                        <tr class="hover:bg-gray-100">
+                            <td class="hover:bg-gray-100 px-10 py-5 border-b-1 border-solid border-gray-200">{{ 'Nombre' }}</td>
+                            <td class="hover:bg-gray-100 px-10 py-5 border-b-1 border-solid border-gray-200">{{ 'Titulo' }}</td>
+                            <td class="hover:bg-gray-100 min-size px-10 py-5 border-b-1 border-solid border-gray-200" style="width: 1%">
+                                <div class="flex items-center flex-no-wrap" style="gap: 0.7rem">
+                                    <button class="m-0 text-center bg-blue-400 text-white border-0 rounded-sm cursor-pointer text-white w-25 h-25">
+                                        >
+                                    </button>
+
+                                    <button class="m-0 text-center bg-red-400 text-white border-0 rounded-sm cursor-pointer text-white w-25 h-25">
+                                        ::
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+    
+        <div class="grid-col-4 border-1 border-solid border-gray-300 bg-white rounded p-15">
+            <div class="w-full grid mb-15">
+                <button (click)="startRecording()"
+                    class="bg-green-700 px-12 py-7 text-base grid-col-6 border-0 rounded-smd cursor-pointer text-white">
+                    Grabar
+                </button>
+                <button (click)="stopRecording()"
+                    class="bg-red-700 px-12 py-7 text-base grid-col-6 border-0 rounded-smd cursor-pointer text-white">
+                    Parar
+                </button>
+
+                <audio #preview class="px-12 py-7 grid-col-12 border-0 rounded-smd" controls></audio>
+
+                <div class="grid-col-12">
+                    <p class="m-0 display-block text-center">o</p>
+                </div>
+
+                <div class="grid-col-12">
+                    <input type="file" class="w-full m-0 border-1 border-solid border-gray-200 bg-white px-12 py-5 text-base">                    
+                </div>
+                <button (click)="processAudio()"
+                    class="bg-blue-700 px-12 py-7 text-base grid-col-12 border-0 rounded-smd cursor-pointer text-white">
+                    Procesar audio
+                </button>
+            </div>
+        </div>
+        
+        <div class="grid-col-8 border-1 border-solid border-gray-300 bg-white rounded p-15">
+            <h4 class="font-bold m-0 display-block">Grafica de tonalidad</h4>
+            <canvas #canvas></canvas>
+        </div>
+
+        <div class="grid-col-4 border-1 border-solid border-gray-300 bg-white rounded p-15">
+            <h1 class="text-blue-800 mb-10 text-center font-bold display-block">90/100</h1>
+
+            <p class="display-block m-0">Cancion predecida: </p>
+            <p class="display-block m-0 mb-7 font-semibold">NOMBRE</p>
+        </div>
+    </div>
+
+</div>

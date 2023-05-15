@@ -1,0 +1,15 @@
+@import "variables";
+@import "colors";
+@import "general";
+@import "texts";
+@import "border";
+@import "positions";
+@import "shadows";
+@import "components";
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: $font-family;
+}

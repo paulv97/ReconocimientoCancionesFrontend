@@ -140,6 +140,7 @@ export class HomeComponent implements AfterViewInit {
         this.audioChart.destroy()
       }
       this.score = 0
+      this.preview.nativeElement.value = ''
       this.selectedTune = null
     }
   }

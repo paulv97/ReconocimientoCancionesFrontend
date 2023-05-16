@@ -28,6 +28,8 @@ export class HomeComponent implements AfterViewInit {
 
   selectedTune: any = null
 
+  score: number = 0
+
   constructor(
     private audioService: AudioService,
     private httpClient: HttpClient

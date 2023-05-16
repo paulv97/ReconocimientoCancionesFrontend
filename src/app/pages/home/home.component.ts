@@ -17,6 +17,7 @@ export class HomeComponent implements AfterViewInit {
   audioContext!: AudioContext;
   audioSource!: AudioBufferSourceNode;
   animationFrameId!: number;
+  arrayBufferData!: ArrayBuffer;
   audioData!: File;
 
   tunes = [
@@ -52,42 +53,49 @@ export class HomeComponent implements AfterViewInit {
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const audioData = e.target?.result as ArrayBuffer;
-        this.decodeAudioData(audioData);
+        this.arrayBufferData = audioData
+        // this.decodeAudioData(audioData);
       };
       reader.readAsArrayBuffer(file);
     }
   }
 
-  decodeAudioData(audioData: ArrayBuffer): void {
-    this.audioContext.decodeAudioData(audioData, (buffer: AudioBuffer) => {
-      const audioChannelData = buffer.getChannelData(0);
-      const sampleRate = buffer.sampleRate;
-      const samples = audioChannelData.length;
-      const step = Math.ceil(samples / 1000); // Calcula el paso para obtener 1000 muestras
-
-      const timestamps: any[] = [];
-      const amplitudes: any[] = [];
-
-      const update = () => {
-        const currentTime = this.audioContext.currentTime;
-        const currentIndex = Math.floor(currentTime * sampleRate);
-
-        timestamps.push(currentTime.toFixed(2));
-        amplitudes.push(audioChannelData[currentIndex]);
-
-        if (currentIndex < samples) {
-          this.animationFrameId = requestAnimationFrame(update);
-          this.renderChart(timestamps, amplitudes);
-        }
-      };
-
-      this.audioSource = this.audioContext.createBufferSource();
-      this.audioSource.buffer = buffer;
-      this.audioSource.connect(this.audioContext.destination);
-      this.audioSource.start();
-
-      this.animationFrameId = requestAnimationFrame(update);
-    });
+  async decodeAudioData(audioData: ArrayBuffer) {
+    this.isLoading = true
+    try {
+      await this.audioContext.decodeAudioData(audioData, (buffer: AudioBuffer) => {
+        const audioChannelData = buffer.getChannelData(0);
+        const sampleRate = buffer.sampleRate;
+        const samples = audioChannelData.length;
+        const step = Math.ceil(samples / 1000); // Calcula el paso para obtener 1000 muestras
+  
+        const timestamps: any[] = [];
+        const amplitudes: any[] = [];
+  
+        const update = () => {
+          const currentTime = this.audioContext.currentTime;
+          const currentIndex = Math.floor(currentTime * sampleRate);
+  
+          timestamps.push(currentTime.toFixed(2));
+          amplitudes.push(audioChannelData[currentIndex]);
+  
+          if (currentIndex < samples) {
+            this.animationFrameId = requestAnimationFrame(update);
+            this.renderChart(timestamps, amplitudes);
+          }
+        };
+  
+        this.audioSource = this.audioContext.createBufferSource();
+        this.audioSource.buffer = buffer;
+        this.audioSource.connect(this.audioContext.destination);
+        this.audioSource.start();
+  
+        this.animationFrameId = requestAnimationFrame(update);
+      });
+    }
+    finally {
+      this.isLoading = false
+    }
   }
 
   renderChart(timestamps: number[], amplitudes: number[]): void {
@@ -133,6 +141,7 @@ export class HomeComponent implements AfterViewInit {
   }
 
   stopPlayback(): void {
+    this.arrayBufferData = new ArrayBuffer(1)
     if (this.audioSource) {
       this.audioSource.stop();
       cancelAnimationFrame(this.animationFrameId);
@@ -160,10 +169,19 @@ export class HomeComponent implements AfterViewInit {
       alert('Debe cargar un archivo de audio')
       return;
     }
-
-    this.isLoading = true
     console.log(this.audioData)
 
+    try{
+      this.decodeAudioData(this.arrayBufferData)
+      setTimeout(() => this.gradeScore(), 3000)
+    }
+    catch(err) {
+      console.log(err)
+      this.isLoading = false;
+    }   
+  }
+
+  gradeScore() {
     const formData: FormData = new FormData();
     formData.append('audio', this.audioData);
     formData.append('etiqueta', this.selectedTune.id);

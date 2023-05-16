@@ -3,28 +3,57 @@
     <div class="grid">
         <div class="grid-col-8 border-1 border-solid border-gray-300 bg-white rounded p-15">
             <h4 class="font-bold m-0 display-block mb-10">Lista de canciones</h4>
+            <div class="px-12 py-7 w-full border-0 rounded-smd">
+                <audio #preview class="w-full"></audio>
+            </div>
 
             <table class="table w-full">
                 <thead>
                     <tr>
-                        <th class="px-10 py-5 bg-gray-200 text-left font-medium">Nombre</th>
+                        <th class="px-10 py-5 bg-gray-200 text-left font-medium">#</th>
                         <th class="px-10 py-5 bg-gray-200 text-left font-medium">Titulo</th>
                         <th class="min-size px-10 py-5 bg-gray-200 text-left font-medium"></th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    <ng-container *ngFor="let i of [11,1,1,1]">
-                        <tr class="hover:bg-gray-100">
-                            <td class="hover:bg-gray-100 px-10 py-5 border-b-1 border-solid border-gray-200">{{ 'Nombre' }}</td>
-                            <td class="hover:bg-gray-100 px-10 py-5 border-b-1 border-solid border-gray-200">{{ 'Titulo' }}</td>
+                    <ng-container *ngFor="let t of tunes">
+                        <tr *ngIf="!selectedTune || t.id!=selectedTune['id']" class="hover:bg-gray-100">
+                            <td class="hover:bg-gray-100 px-10 py-5 border-b-1 border-solid border-gray-200">{{ t.id }}</td>
+                            <td class="hover:bg-gray-100 px-10 py-5 border-b-1 border-solid border-gray-200">{{ t.name }}</td>
                             <td class="hover:bg-gray-100 min-size px-10 py-5 border-b-1 border-solid border-gray-200" style="width: 1%">
                                 <div class="flex items-center flex-no-wrap" style="gap: 0.7rem">
-                                    <button class="m-0 text-center bg-blue-400 text-white border-0 rounded-sm cursor-pointer text-white w-25 h-25">
+                                    <a (click)="selectTune(t)"
+                                        class="m-0 text-center bg-blue-400 text-white border-0 rounded-sm cursor-pointer text-white w-100 h-25">
+                                        Seleccionar
+                                    </a>
+<!-- 
+                                    <button class="m-0 text-center bg-green-700 text-white border-0 rounded-sm cursor-pointer text-white w-25 h-25">
                                         >
                                     </button>
 
-                                    <button class="m-0 text-center bg-red-400 text-white border-0 rounded-sm cursor-pointer text-white w-25 h-25">
+                                    <button class="m-0 text-center bg-red-700 text-white border-0 rounded-sm cursor-pointer text-white w-25 h-25">
+                                        ::
+                                    </button> -->
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr *ngIf="selectedTune && t.id==selectedTune['id']" class="bg-gray-300">
+                            <td class="hover:bg-gray-100 px-10 py-5 border-b-1 border-solid border-gray-200">{{ t.id }}</td>
+                            <td class="hover:bg-gray-100 px-10 py-5 border-b-1 border-solid border-gray-200">{{ t.name }}</td>
+                            <td class="hover:bg-gray-100 min-size px-10 py-5 border-b-1 border-solid border-gray-200" style="width: 1%">
+                                <div class="flex items-center flex-no-wrap" style="gap: 0.7rem">
+                                    <a (click)="selectTune(t)"
+                                        class="m-0 text-center bg-blue-400 text-white border-0 rounded-sm cursor-pointer text-white w-100 h-25">
+                                        Seleccionar
+                                    </a>
+
+                                    <button class="m-0 text-center bg-green-700 text-white border-0 rounded-sm cursor-pointer text-white w-25 h-25">
+                                        >
+                                    </button>
+
+                                    <button class="m-0 text-center bg-red-700 text-white border-0 rounded-sm cursor-pointer text-white w-25 h-25">
                                         ::
                                     </button>
                                 </div>
@@ -37,31 +66,24 @@
     
         <div class="grid-col-4 border-1 border-solid border-gray-300 bg-white rounded p-15">
             <div class="w-full grid mb-15">
-                <button (click)="startRecording()"
-                    class="bg-green-700 px-12 py-7 text-base grid-col-6 border-0 rounded-smd cursor-pointer text-white">
-                    Grabar
+                <button (click)="stopPlayback()"
+                    class="bg-red-700 px-12 py-7 text-base grid-col-12 border-0 rounded-smd cursor-pointer text-white">
+                    Detener
                 </button>
-                <button (click)="stopRecording()"
-                    class="bg-red-700 px-12 py-7 text-base grid-col-6 border-0 rounded-smd cursor-pointer text-white">
-                    Parar
-                </button>
-
-                <audio #preview class="px-12 py-7 grid-col-12 border-0 rounded-smd" controls></audio>
-
-                <div class="grid-col-12">
-                    <p class="m-0 display-block text-center">o</p>
-                </div>
 
                 <div class="grid-col-12">
                     <input
                         (change)="handleFileInput($event)" 
-                        type="file" 
+                        type="file"
+                        accept="audio/*"
                         class="w-full m-0 border-1 border-solid border-gray-200 bg-white px-12 py-5 text-base">                    
                 </div>
                 <button (click)="processAudio()"
                     class="bg-blue-700 px-12 py-7 text-base grid-col-12 border-0 rounded-smd cursor-pointer text-white">
                     Procesar audio
                 </button>
+
+                <h4 class="display-block grid-col-12">{{ selectedTune?.name }}</h4>
             </div>
         </div>
         

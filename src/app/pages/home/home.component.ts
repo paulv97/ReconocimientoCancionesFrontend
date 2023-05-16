@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { Chart } from 'chart.js/auto';
 import { AudioService } from 'src/app/shared/services/audio.service';
 
@@ -8,11 +8,23 @@ import { AudioService } from 'src/app/shared/services/audio.service';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements AfterViewInit {
-  chart!: Chart
-  file!: Blob
-
   @ViewChild('preview', { read: ElementRef }) preview!: ElementRef;
   @ViewChild('canvas') canvas!: ElementRef;
+
+  audioChart!: Chart;
+  audioContext!: AudioContext;
+  audioSource!: AudioBufferSourceNode;
+  animationFrameId!: number;
+
+  tunes = [
+    { id: 1, name: 'El aguacate' },
+    { id: 2, name: 'Mentirosa' },
+    { id: 3, name: 'Motora' },
+    { id: 4, name: 'Niña bonita' },
+    { id: 5, name: 'Without me' },
+  ]
+
+  selectedTune: any = null
 
   constructor(
     private audioService: AudioService
@@ -20,74 +32,111 @@ export class HomeComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    const canvas = this.canvas.nativeElement;
-    const ctx = canvas.getContext('2d');
-    this.chart = new Chart(ctx, {
+    this.audioContext = new AudioContext()
+  }
+
+  handleFileInput(event: Event): void {
+    const fileInput = event.target as HTMLInputElement;
+    const file = fileInput.files?.item(0);
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const audioData = e.target?.result as ArrayBuffer;
+        this.decodeAudioData(audioData);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  }
+
+  decodeAudioData(audioData: ArrayBuffer): void {
+    this.audioContext.decodeAudioData(audioData, (buffer: AudioBuffer) => {
+      const audioChannelData = buffer.getChannelData(0);
+      const sampleRate = buffer.sampleRate;
+      const samples = audioChannelData.length;
+      const step = Math.ceil(samples / 1000); // Calcula el paso para obtener 1000 muestras
+
+      const timestamps: any[] = [];
+      const amplitudes: any[] = [];
+
+      const update = () => {
+        const currentTime = this.audioContext.currentTime;
+        const currentIndex = Math.floor(currentTime * sampleRate);
+
+        timestamps.push(currentTime.toFixed(2));
+        amplitudes.push(audioChannelData[currentIndex]);
+
+        if (currentIndex < samples) {
+          this.animationFrameId = requestAnimationFrame(update);
+          this.renderChart(timestamps, amplitudes);
+        }
+      };
+
+      this.audioSource = this.audioContext.createBufferSource();
+      this.audioSource.buffer = buffer;
+      this.audioSource.connect(this.audioContext.destination);
+      this.audioSource.start();
+
+      this.animationFrameId = requestAnimationFrame(update);
+    });
+  }
+
+  renderChart(timestamps: number[], amplitudes: number[]): void {
+    if (this.audioChart) {
+      this.audioChart.destroy();
+    }
+
+    const ctx = this.canvas.nativeElement.getContext('2d');
+    this.audioChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: [],
+        labels: timestamps,
         datasets: [{
-          label: 'Tonalidad',
-          data: [],
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          borderColor: 'rgba(255, 99, 132, 1)',
-          borderWidth: 1
+          label: 'Audio',
+          data: amplitudes,
+          borderColor: 'blue',
+          fill: false
         }]
       },
       options: {
+        responsive: true,
         scales: {
           x: {
-            display: false
+            display: true,
+            title: {
+              display: true,
+              text: 'Tiempo'
+            }
           },
           y: {
-            min: 0,
-            max: 1
+            display: true,
+            title: {
+              display: true,
+              text: 'Amplitud'
+            }
           }
+        },
+        animation: {
+          duration: 0
         }
       }
     });
   }
 
-  startRecording() {
-    this.chart.data.datasets[0].data = []
-    this.audioService.initAudioContext()
-    this.audioService.setChart(this.chart)
-    this.audioService.start()
-  }
-
-  stopRecording() {
-    this.audioService.stop()
-    const audioRecorded = this.audioService.getAudioRecorded()
-    if(audioRecorded) {
-      const url = URL.createObjectURL(audioRecorded)
-      console.log(url)
-      this.preview.nativeElement.src = url
+  stopPlayback(): void {
+    if (this.audioSource) {
+      this.audioSource.stop();
+      cancelAnimationFrame(this.animationFrameId);
     }
   }
 
-  handleFileInput(event: any) {
-    console.log(event)
-    const file: File = event.target.files.item(0)
-    if(file) {
-      this.readFileContent(file)
-    }
-  }
-
-  readFileContent(file: File) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const content = reader.result as ArrayBuffer
-      console.log(content)
-      this.file = new Blob([content])
-      const url = URL.createObjectURL(this.file)
-      console.log(url)
-      this.preview.nativeElement.src = url
-    };
-    reader.readAsArrayBuffer(file);
+  selectTune(tune: any) {
+    this.selectedTune = tune
+    console.log(this.selectedTune)
   }
 
   processAudio() {
-    
+
   }
 
 }

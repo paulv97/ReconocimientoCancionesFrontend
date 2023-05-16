@@ -49,23 +49,6 @@ export class AudioService {
           this.recordedAudio = blob
         });
 
-        // this.mediaRecorder.mimeTypes = ['audio/ogg; codecs=opus'];
-
-        // const processor = this.audioContext.createScriptProcessor(4096, 1, 1);
-        // processor.onaudioprocess = (event: AudioProcessingEvent) => {
-        //   const buffer = event.inputBuffer.getChannelData(0);
-        //   const data = new Float32Array(buffer.length);
-        //   for (let i = 0; i < buffer.length; i++) {
-        //     data[i] = buffer[i];
-        //   }
-        //   this.audioChunks.push(new Blob([data], { type: 'audio/ogg; codecs=opus' }));
-        // };
-        // source.connect(processor);
-        // processor.connect(this.audioContext.destination);
-
-        // this.mediaRecorder = new MediaRecorder(stream);
-        // this.mediaRecorder.start();
-
         source.connect(this.analyser);
         this.analyser.connect(this.audioContext.destination);
         this.intervalId = setInterval(() => this.processAudio(), 50); 
@@ -82,11 +65,6 @@ export class AudioService {
   getAudioRecorded() {
     if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
       this.mediaRecorder.stop();
-      //audioBlob = new Blob(this.audioChunks, { type: 'audio/ogg; codecs=opus' });
-      // this.mediaRecorder.ondataavailable = event => {
-      //   this.audioChunks.push(event.data);
-      //   audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-      // };
     }
 
     return this.recordedAudio
@@ -96,12 +74,24 @@ export class AudioService {
     this.chart = chart
   }
 
+  graphUploadedAudio(audio: HTMLAudioElement) {
+    const source = this.audioContext.createMediaElementSource(audio);
+    source.connect(this.analyser);
+    this.analyser.connect(this.audioContext.destination);
+    audio.play()
+    this.intervalId = setInterval(() => this.processAudio(), 50); 
+  }
+
   private processAudio() {
     this.analyser.getFloatFrequencyData(this.dataArray);
     const sum = this.dataArray.reduce((acc, val) => acc + val);
+    console.log('La suma', sum)
     const average = sum / this.bufferLength;
+    console.log('Buffer Lenght', this.bufferLength)
+    console.log('Average', average)
 
     const tonality = (average + 140) / 280; // Normalizar el valor a un rango de 0 a 1
+    console.log('Tonality', tonality)
     this.updateChart(tonality);
   }
 

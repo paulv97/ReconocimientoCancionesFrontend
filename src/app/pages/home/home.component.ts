@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Chart } from 'chart.js/auto';
 import { AudioService } from 'src/app/shared/services/audio.service';
 
@@ -15,6 +16,7 @@ export class HomeComponent implements AfterViewInit {
   audioContext!: AudioContext;
   audioSource!: AudioBufferSourceNode;
   animationFrameId!: number;
+  audioData!: File;
 
   tunes = [
     { id: 1, name: 'El aguacate' },
@@ -27,7 +29,8 @@ export class HomeComponent implements AfterViewInit {
   selectedTune: any = null
 
   constructor(
-    private audioService: AudioService
+    private audioService: AudioService,
+    private httpClient: HttpClient
   ) {
   }
 
@@ -40,6 +43,7 @@ export class HomeComponent implements AfterViewInit {
     const file = fileInput.files?.item(0);
 
     if (file) {
+      this.audioData = file
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const audioData = e.target?.result as ArrayBuffer;
@@ -136,7 +140,16 @@ export class HomeComponent implements AfterViewInit {
   }
 
   processAudio() {
+    console.log(this.audioData)
 
+    const formData: FormData = new FormData();
+    formData.append('audio', this.audioData);
+    formData.append('etiqueta', this.selectedTune.id);
+
+    this.httpClient.post('http://localhost:5000/api/process-audio', formData)
+    .subscribe(
+      resp => console.log(resp),
+      error => console.log(error))
   }
 
 }

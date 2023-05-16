@@ -9,6 +9,7 @@ import { AudioService } from 'src/app/shared/services/audio.service';
 })
 export class HomeComponent implements AfterViewInit {
   chart!: Chart
+  file!: Blob
 
   @ViewChild('preview', { read: ElementRef }) preview!: ElementRef;
   @ViewChild('canvas') canvas!: ElementRef;
@@ -58,14 +59,35 @@ export class HomeComponent implements AfterViewInit {
     this.audioService.stop()
     const audioRecorded = this.audioService.getAudioRecorded()
     if(audioRecorded) {
-      const url = URL.createObjectURL(audioRecorded);
+      const url = URL.createObjectURL(audioRecorded)
       console.log(url)
-      this.preview.nativeElement.src = url;
+      this.preview.nativeElement.src = url
     }
   }
 
-  processAudio() {
+  handleFileInput(event: any) {
+    console.log(event)
+    const file: File = event.target.files.item(0)
+    if(file) {
+      this.readFileContent(file)
+    }
+  }
 
+  readFileContent(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const content = reader.result as ArrayBuffer
+      console.log(content)
+      this.file = new Blob([content])
+      const url = URL.createObjectURL(this.file)
+      console.log(url)
+      this.preview.nativeElement.src = url
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  processAudio() {
+    
   }
 
 }

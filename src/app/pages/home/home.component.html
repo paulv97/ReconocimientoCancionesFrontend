@@ -87,9 +87,9 @@
             </div>
         </div>
         
-        <div class="grid-col-8 border-1 border-solid border-gray-300 bg-white rounded p-15">
+        <div class="grid-col-8 border-1 border-solid border-gray-300 bg-white rounded p-15 overflow-auto" style="max-height: 350px;">
             <h4 class="font-bold m-0 display-block">Grafica de tonalidad</h4>
-            <canvas #canvas></canvas>
+            <canvas #canvas style="height: 280px;"></canvas>
         </div>
 
         <div class="grid-col-4 border-1 border-solid border-gray-300 bg-white rounded p-15">
@@ -100,4 +100,10 @@
         </div>
     </div>
 
+</div>
+
+<div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-container">
+        <div class="spinner"></div>
+    </div>
 </div>

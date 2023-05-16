@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Chart } from 'chart.js/auto';
 import { AudioService } from 'src/app/shared/services/audio.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -29,6 +30,8 @@ export class HomeComponent implements AfterViewInit {
   selectedTune: any = null
 
   score: number = 0
+
+  isLoading = false
 
   constructor(
     private audioService: AudioService,
@@ -133,6 +136,11 @@ export class HomeComponent implements AfterViewInit {
     if (this.audioSource) {
       this.audioSource.stop();
       cancelAnimationFrame(this.animationFrameId);
+      if(this.audioChart) {
+        this.audioChart.destroy()
+      }
+      this.score = 0
+      this.selectedTune = null
     }
   }
 
@@ -142,15 +150,30 @@ export class HomeComponent implements AfterViewInit {
   }
 
   processAudio() {
+    if(this.selectedTune == null) {
+      alert('Seleccione una cancion')
+      return;
+    }
+
+    if(this.audioData == null || this.audioData == undefined) {
+      alert('Debe cargar un archivo de audio')
+      return;
+    }
+
+    this.isLoading = true
     console.log(this.audioData)
 
     const formData: FormData = new FormData();
     formData.append('audio', this.audioData);
     formData.append('etiqueta', this.selectedTune.id);
 
-    this.httpClient.post('http://localhost:5000/api/process-audio', formData)
+    this.httpClient.post<number>('http://localhost:5000/api/process-audio', formData)
+    .pipe(finalize(() => this.isLoading = false))
     .subscribe(
-      resp => console.log(resp),
+      (resp: number) => {
+        console.log(resp)
+        this.score = Math.ceil(resp)
+      },
       error => console.log(error))
   }
 

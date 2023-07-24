@@ -29,6 +29,7 @@ export class HomeComponent implements AfterViewInit {
   ]
 
   selectedTune: any = null
+  predictedTune: any = null
 
   score: number = 0
 
@@ -141,6 +142,7 @@ export class HomeComponent implements AfterViewInit {
   }
 
   stopPlayback(): void {
+    this.predictedTune = null
     this.arrayBufferData = new ArrayBuffer(1)
     if (this.audioSource) {
       this.audioSource.stop();
@@ -189,9 +191,10 @@ export class HomeComponent implements AfterViewInit {
     this.httpClient.post<number>('http://localhost:5000/api/process-audio', formData)
     .pipe(finalize(() => this.isLoading = false))
     .subscribe(
-      (resp: number) => {
+      (resp: any) => {
         console.log(resp)
-        this.score = Math.ceil(resp)
+        this.score = Math.ceil(resp.porcentaje)
+        this.predictedTune = this.tunes.filter(t => t.id == resp.id_cancion)[0]
       },
       error => console.log(error))
   }
